@@ -1,0 +1,26 @@
+{
+  "name": "syncagenda",
+  "version": "1.0.0",
+  "description": "A Discord bot that will sync Twitch Schedules with Discord Events",
+  "main": "main.ts",
+  "scripts": {
+    "dev": "tsc && node ./lib/main.js ./environment/development.json",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Archid3vtus/Syncagenda.git"
+  },
+  "author": "Yuri Braga",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Archid3vtus/Syncagenda/issues"
+  },
+  "homepage": "https://github.com/Archid3vtus/Syncagenda#readme",
+  "devDependencies": {
+    "typescript": "^4.6.2"
+  },
+  "dependencies": {
+    "discord.js": "^13.6.0"
+  }
+}
