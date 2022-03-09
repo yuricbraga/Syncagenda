@@ -1,4 +1,4 @@
-import { Client, Intents } from "discord.js";
+import { Client, Intents, GuildScheduledEventManager, Guild } from "discord.js";
 import { Environment } from "./helpers/Environment";
 import { Twitch } from "./models/Twitch";
 import { DeployCommandsToGuild } from "./procedures/DeployCommandsToGuild";
@@ -38,29 +38,64 @@ client.once("ready", () => {
   console.log("Bot is ready.");
 });
 
-client.on("interactionCreate", async (interation) => {
-  if (!interation.isCommand()) return;
+client.on("interactionCreate", async (interaction) => {
+  if (!interaction.isCommand()) return;
 
-  const { commandName } = interation;
+  const { commandName } = interaction;
 
   switch (commandName) {
     case "ping": {
-      await interation.reply("Pong!");
+      await interaction.reply("Pong!");
       break;
     }
     case "scheduleretrieve": {
+      interaction.deferReply();
       const twitch = new Twitch(twitchClientId, twitchClientSecret);
 
-      let streamerId = interation.options.getString("streamerid");
+      let streamerNickname = interaction.options.getString("streamerid");
 
-      if (streamerId == null) {
-        await interation.reply("Couldn't get a schedule!");
+      if (streamerNickname == null) {
+        await interaction.editReply("Couldn't get a schedule!");
         break;
       }
 
-      const schedule = await twitch.getSchedule(streamerId);
+      console.log(streamerNickname);
+      const userIdResponse = (await twitch.getTwitchUserId(
+        streamerNickname
+      )) as any;
 
-      await interation.reply(JSON.stringify(schedule, null, 2));
+      if (userIdResponse.data.length === 0) {
+        await interaction.editReply("This user doesn't exist!");
+        break;
+      }
+
+      const { id: streamerId } = userIdResponse.data[0];
+      const schedule = (await twitch.getSchedule(streamerId)) as any;
+
+      console.log(schedule);
+
+      if (Object.keys(schedule).length > 0) {
+        if (schedule?.data?.segments == null) {
+          await interaction.editReply("This user has no schedule!");
+          break;
+        }
+
+        schedule.data.segments.map(async (event: any) => {
+          console.log(event);
+          await interaction.guild?.scheduledEvents.create({
+            entityType: "EXTERNAL",
+            name: event.title !== "" ? event.title : "No title",
+            privacyLevel: "GUILD_ONLY",
+            scheduledStartTime: event.start_time,
+            scheduledEndTime: event.end_time,
+            entityMetadata: {
+              location: "https://twitch.tv",
+            },
+          });
+        });
+      }
+
+      await interaction.editReply("Schedule applied!");
       break;
     }
   }

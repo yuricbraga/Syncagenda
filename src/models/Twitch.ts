@@ -32,4 +32,18 @@ export class Twitch {
       },
     });
   }
+
+  async getTwitchUserId(login: string) {
+    const { access_token } = await this.authenticate();
+
+    return await Fetch.get("api.twitch.tv/helix/users", {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+        "Client-id": this.clientId,
+      },
+      params: {
+        login,
+      },
+    });
+  }
 }
