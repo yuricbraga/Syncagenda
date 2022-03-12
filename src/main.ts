@@ -19,7 +19,6 @@ const {
 if (
   !discordBotClientId ||
   !discordBotToken ||
-  !testGuildId ||
   !twitchClientId ||
   !twitchClientSecret
 ) {
