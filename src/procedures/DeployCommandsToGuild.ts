@@ -7,7 +7,15 @@ export class DeployCommandsToGuild {
   guildId: string;
   token: string;
 
-  constructor(clientId: string, guildId: string, token: string) {
+  constructor({
+    clientId,
+    guildId,
+    token,
+  }: {
+    clientId: string;
+    guildId?: string;
+    token: string;
+  }) {
     this.clientId = clientId;
     this.guildId = guildId;
     this.token = token;
@@ -31,11 +39,18 @@ export class DeployCommandsToGuild {
 
     const rest = new REST({ version: "9" }).setToken(this.token);
 
-    rest
-      .put(Routes.applicationGuildCommands(this.clientId, this.guildId), {
-        body: commands,
-      })
-      .then(() => console.log("Commands registered!"))
-      .catch(console.error);
+    if (this.guildId) {
+      rest
+        .put(Routes.applicationGuildCommands(this.clientId, this.guildId), {
+          body: commands,
+        })
+        .then(() => console.log("Commands registered!"))
+        .catch(console.error);
+    } else {
+      rest
+        .put(Routes.applicationCommands(this.clientId), { body: commands })
+        .then(() => console.log("Commands registered!"))
+        .catch(console.error);
+    }
   }
 }
