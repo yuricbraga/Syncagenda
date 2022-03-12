@@ -21,7 +21,6 @@ export class DiscordInterations {
         streamerNickname
       )) as any;
 
-      console.log(userIdResponse);
       if (userIdResponse.data.length === 0)
         throw { status: 404, message: "This user doesn't exist!" };
 
