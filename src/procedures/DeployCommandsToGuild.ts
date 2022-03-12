@@ -16,9 +16,6 @@ export class DeployCommandsToGuild {
   public deploy() {
     const commands = [
       new SlashCommandBuilder()
-        .setName("ping")
-        .setDescription("Replies with pong"),
-      new SlashCommandBuilder()
         .setName("scheduleretrieve")
         .setDescription("Retrieves a Twitch schedule")
         .addStringOption((option) =>
@@ -27,6 +24,9 @@ export class DeployCommandsToGuild {
             .setDescription("The streamer to retrieve from")
             .setRequired(true)
         ),
+      new SlashCommandBuilder()
+        .setName("clearevents")
+        .setDescription("Completely clears server events."),
     ].map((command) => command.toJSON());
 
     const rest = new REST({ version: "9" }).setToken(this.token);

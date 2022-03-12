@@ -44,12 +44,8 @@ client.on("interactionCreate", async (interaction) => {
   const { commandName } = interaction;
 
   switch (commandName) {
-    case "ping": {
-      await interaction.reply("Pong!");
-      break;
-    }
     case "scheduleretrieve": {
-      interaction.deferReply();
+      await interaction.deferReply();
       const twitch = new Twitch(twitchClientId, twitchClientSecret);
 
       let streamerNickname = interaction.options.getString("streamerid");
@@ -80,33 +76,37 @@ client.on("interactionCreate", async (interaction) => {
           break;
         }
 
-        schedule.data.segments.map(async (event: any) => {
-          console.log(event);
-          await interaction.guild?.scheduledEvents.create({
+        for (let event of schedule.data.segments) {
+          interaction.guild?.scheduledEvents.create({
             entityType: "EXTERNAL",
             name: event.title !== "" ? event.title : "No title",
             privacyLevel: "GUILD_ONLY",
             scheduledStartTime: event.start_time,
             scheduledEndTime: event.end_time,
             entityMetadata: {
-              location: "https://twitch.tv",
+              location: `https://twitch.tv/${streamerNickname}`,
             },
           });
-        });
+        }
       }
 
       await interaction.editReply("Schedule applied!");
+      break;
+    }
+    case "clearevents": {
+      await interaction.deferReply();
+      const events = await interaction.guild?.scheduledEvents.fetch();
+
+      if (events)
+        for (let event of events?.toJSON()) {
+          if (event.entityMetadata["location"]?.includes("twitch"))
+            interaction.guild?.scheduledEvents.delete(event);
+        }
+
+      await interaction.editReply("Your Discord agenda was cleared!");
       break;
     }
   }
 });
 
 client.login(discordBotToken);
-
-/*
-const twitch = new Twitch(twitchClientId, twitchClientSecret);
-
-twitch.authenticate().then((data) => {
-  console.log(data);
-});
-*/
