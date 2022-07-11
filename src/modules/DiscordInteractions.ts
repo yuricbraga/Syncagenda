@@ -1,5 +1,6 @@
 import { CommandInteraction } from "discord.js";
 import { Twitch } from "../models/Twitch";
+import { channelScheduleType } from "../types/twitch";
 
 export class DiscordInterations {
   private twitch: Twitch;
@@ -25,7 +26,9 @@ export class DiscordInterations {
         throw { status: 404, message: "This user doesn't exist!" };
 
       const { id: streamerId } = userIdResponse.data[0];
-      const schedule = (await this.twitch.getSchedule(streamerId)) as any;
+      const schedule = (await this.twitch.getSchedule(
+        streamerId
+      )) as channelScheduleType;
 
       if (Object.keys(schedule).length > 0) {
         if (schedule?.data?.segments == null) {
@@ -34,9 +37,20 @@ export class DiscordInterations {
 
         for (let event of schedule.data.segments) {
           // Create events without waiting
+          let name = "";
+
+          if (
+            event?.category?.name != null &&
+            event?.category?.name.length > 0
+          ) {
+            name += `[${event.category.name}] `;
+          }
+
+          if (event.title.length > 0) name += event.title;
+
           interaction.guild?.scheduledEvents.create({
             entityType: "EXTERNAL",
-            name: event.title !== "" ? event.title : "No title",
+            name,
             privacyLevel: "GUILD_ONLY",
             scheduledStartTime: event.start_time,
             scheduledEndTime: event.end_time,
